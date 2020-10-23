@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: config-server
+  profiles:
+    active: native
+
+  cloud:
+    config:
+      server:
+        #Local configuration: This locations can either of classpath or locations in the filesystem.
+        native:
+          #Reads from a specific filesystem folder
+          search-locations: classpath:/config
+server:
+  port: 8071
