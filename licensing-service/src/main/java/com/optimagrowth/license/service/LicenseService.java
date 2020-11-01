@@ -7,12 +7,22 @@ import com.optimagrowth.license.repository.LicenseRepository;
 import com.optimagrowth.license.service.client.OrganizationDiscoveryClient;
 import com.optimagrowth.license.service.client.OrganizationFeignClient;
 import com.optimagrowth.license.service.client.OrganizationRestTemplateClient;
+import com.optimagrowth.license.util.UserContextHolder;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 @Service
+@Slf4j
 public class LicenseService {
 
     private final LicenseRepository repository;
@@ -83,6 +93,18 @@ public class LicenseService {
         return license.withComment(config.getProperty());
     }
 
+    @CircuitBreaker(name = "licenseService", fallbackMethod = "buildFallbackLicenseList")
+    @Retry(name = "retryLicenseService", fallbackMethod = "buildFallbackLicenseList")
+    @Bulkhead(name = "bulkheadLicenseService",
+            type = Bulkhead.Type.THREADPOOL,
+            fallbackMethod = "buildFallbackLicenseList")
+    public List<License> getLicensesByOrganization(String organizationId) throws TimeoutException {
+        log.debug("getLicensesByOrganization Correlation id: {}", UserContextHolder.getContext().getCorrelationId());
+        randomlyRunLong();
+        return repository.findByOrganizationId(organizationId);
+    }
+
+
     private Organization retrieveOrganizationInfo(String organizationId, String clientType) {
         Organization organization = null;
 
@@ -93,18 +115,47 @@ public class LicenseService {
                 break;
             case "rest":
                 System.out.println("I am using the rest client");
-                organization = organizationRestClient.getOrganization(organizationId);
+                organization = getOrganization(organizationId);
                 break;
             case "discovery":
                 System.out.println("I am using the discovery client");
                 organization = organizationDiscoveryClient.getOrganization(organizationId);
                 break;
             default:
-                organization = organizationRestClient.getOrganization(organizationId);
+                organization = getOrganization(organizationId);
                 break;
         }
 
         return organization;
     }
 
+    @CircuitBreaker(name = "organizationService")
+    private Organization getOrganization(String organizationId) {
+        return organizationRestClient.getOrganization(organizationId);
+    }
+
+    private List<License> buildFallbackLicenseList(String organizationId, Throwable t) {
+        List<License> fallbackList = new ArrayList<>();
+        License license = new License();
+        license.setLicenseId("0000000-00-00000");
+        license.setOrganizationId(organizationId);
+        license.setProductName("Sorry no licensing information currently available");
+        fallbackList.add(license);
+        return fallbackList;
+    }
+
+    private void randomlyRunLong() throws TimeoutException {
+        Random rand = new Random();
+        int randomNum = rand.nextInt((3 - 1) + 1) + 1;
+        if (randomNum == 3) sleep();
+    }
+
+    private void sleep() throws TimeoutException {
+        try {
+            Thread.sleep(5000);
+            throw new java.util.concurrent.TimeoutException();
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+    }
 }

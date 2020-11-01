@@ -20,7 +20,7 @@ import static java.util.Collections.singletonMap;
 public class ExceptionController extends ResponseEntityExceptionHandler {
 
     /**
-     * handleException - Handles all the Exception recieving a request, responseWrapper.
+     * handleException - Handles all the Exception receiving a request, responseWrapper.
      *
      * @param request incoming request
      * @param responseWrapper to wrap the response with

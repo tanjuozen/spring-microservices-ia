@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-//Package and import definitions left off for conciseness
 @Component
 public class OrganizationRestTemplateClient {
 
