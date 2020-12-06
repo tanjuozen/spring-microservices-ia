@@ -44,7 +44,6 @@ public class LicenseService {
         this.organizationFeignClient = organizationFeignClient;
     }
 
-
     public License getLicense(String licenseId, String organizationId) {
         License license = repository.findByOrganizationIdAndLicenseId(organizationId, licenseId);
         if (license == null) {
