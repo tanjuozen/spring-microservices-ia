@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: licensing-service
   profiles:
@@ -6,6 +8,13 @@ spring:
   cloud:
     config:
       uri: http://configserver:8071
+
+security:
+  oauth2:
+    resource:
+      user-info-uri: http://authentication-server:8082/user
+    client:
+      grant-type: client_credentials
 
 resilience4j.circuitbreaker:
   instances:

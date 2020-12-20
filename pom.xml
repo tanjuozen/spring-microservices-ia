@@ -30,6 +30,7 @@
         <module>eurekaserver</module>
         <module>organization-service</module>
         <module>gatewayserver</module>
+        <module>authentication-server</module>
     </modules>
     <build>
         <plugins>

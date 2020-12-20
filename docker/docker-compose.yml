@@ -66,6 +66,25 @@ services:
       backend:
         aliases:
           - "gateway"
+  authenticationserver:
+    image: ostock/authentication-server:0.0.1-SNAPSHOT
+    container_name: authentication-server
+    environment:
+      PROFILE: "dev"
+      CONFIGSERVER_URI: "http://configserver:8071"
+      CONFIGSERVER_PORT: "8071"
+      ENCRYPT_KEY: "IMSYMMETRIC"
+    depends_on:
+      database:
+        condition: service_healthy
+      configserver:
+        condition: service_started
+    ports:
+      - "8082:8082"
+    networks:
+      backend:
+        aliases:
+          - "authenticationserver"
   licensingservice:
     image: ostock/licensing-service:0.0.1-SNAPSHOT
     ports:

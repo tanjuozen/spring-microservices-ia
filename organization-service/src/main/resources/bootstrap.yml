@@ -6,3 +6,8 @@ spring:
   cloud:
     config:
       uri: http://configserver:8071
+
+security:
+  oauth2:
+    resource:
+      user-info-uri: http://authentication-server:8082/user
