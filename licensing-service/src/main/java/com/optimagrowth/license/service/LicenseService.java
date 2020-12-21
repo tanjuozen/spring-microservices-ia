@@ -50,18 +50,18 @@ public class LicenseService {
             throw new IllegalArgumentException(String.format(messages.getMessage("license.search.error.message",
                     null, null), licenseId, organizationId));
         }
-        return license.withComment(config.getProperty());
+        return license.withComment(config.getExampleProperty());
     }
 
     public License createLicense(License license) {
         license.setLicenseId(UUID.randomUUID().toString());
         License saved = repository.save(license);
-        return saved.withComment(config.getProperty());
+        return saved.withComment(config.getExampleProperty());
     }
 
     public License updateLicense(License license) {
         repository.save(license);
-        return license.withComment(config.getProperty());
+        return license.withComment(config.getExampleProperty());
     }
 
     public String deleteLicense(String licenseId) {
@@ -89,7 +89,7 @@ public class LicenseService {
             license.setContactPhone(organization.getContactPhone());
         }
 
-        return license.withComment(config.getProperty());
+        return license.withComment(config.getExampleProperty());
     }
 
     @CircuitBreaker(name = "licenseService", fallbackMethod = "buildFallbackLicenseList")

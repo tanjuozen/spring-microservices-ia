@@ -1,5 +1,7 @@
 package com.optimagrowth.gateway.filters;
 
+import org.apache.commons.codec.binary.Base64;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -36,7 +38,7 @@ public class TrackingFilter implements GlobalFilter {
             exchange = filterUtils.setCorrelationId(exchange, correlationID);
             logger.debug("tmx-correlation-id generated in tracking filter: {}.", correlationID);
         }
-
+        logger.info("===> The authentication name from the token is {}", getAuthenticationName(requestHeaders));
 
         return chain.filter(exchange);
     }
@@ -48,5 +50,23 @@ public class TrackingFilter implements GlobalFilter {
 
     private String generateCorrelationId() {
         return UUID.randomUUID().toString();
+    }
+
+    private String getAuthenticationName(HttpHeaders requestHeaders) {
+        String authenticationName = "";
+        if (filterUtils.getAuthToken(requestHeaders) != null) {
+            String authToken = filterUtils.getAuthToken(requestHeaders);
+            JSONObject jsonObject = decodeJWT(authToken);
+            authenticationName = jsonObject.getString("authentication_name");
+        }
+        return authenticationName;
+    }
+
+    private JSONObject decodeJWT(String authToken) {
+        String[] split_string = authToken.split("\\.");
+        String base64EncodedBody = split_string[1];
+        Base64 base64URL = new Base64(true);
+        String body = new String(base64URL.decode(base64EncodedBody));
+        return new JSONObject(body);
     }
 }

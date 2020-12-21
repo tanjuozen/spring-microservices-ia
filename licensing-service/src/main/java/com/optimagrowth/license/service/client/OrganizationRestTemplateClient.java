@@ -3,22 +3,21 @@ package com.optimagrowth.license.service.client;
 import com.optimagrowth.license.model.Organization;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class OrganizationRestTemplateClient {
 
-    private final OAuth2RestTemplate oAuth2RestTemplate;
+    private final RestTemplate restTemplate;
 
-    public OrganizationRestTemplateClient(OAuth2RestTemplate oAuth2RestTemplate) {
-        this.oAuth2RestTemplate = oAuth2RestTemplate;
+    public OrganizationRestTemplateClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
-
 
     public Organization getOrganization(String organizationId) {
         ResponseEntity<Organization> restExchange =
-                oAuth2RestTemplate.exchange(
+                restTemplate.exchange(
                         "http://gateway-server:8072/organization/v1/organization/{organizationId}",
                         HttpMethod.GET,
                         null, Organization.class, organizationId);
